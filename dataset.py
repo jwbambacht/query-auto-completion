@@ -9,6 +9,8 @@ class Dataset:
         self.directory = "data"
         self.popular_suffixes_file = self.directory + "/popular_suffixes.npy"
         self.popular_queries_file = self.directory + "/popular_queries.npy"
+        self.candidate_queries_file = self.directory + "/candidate_queries.npy"
+        self.training_samples_file = self.directory + "/training_samples.npy"
         self.logs_directory = self.directory + "/logs"
 
     # Returns all popular suffixes in the `background` of the query logs
@@ -32,7 +34,7 @@ class Dataset:
             suffixes = list(suffixes.items())
             suffixes.sort(key=lambda x: x[1], reverse=True)
             suffixes = list(map(lambda x: x[0], suffixes))
-            suffixes = suffixes[:100000]
+            suffixes = suffixes[:1000]
             np.save(self.popular_suffixes_file, np.array(suffixes))
             return suffixes
         else:
