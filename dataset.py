@@ -3,14 +3,18 @@ import os
 import pandas as pd
 import string
 import gc
+import random
 
 class Dataset:
     def __init__(self):
+        random.seed(42)
         self.directory = "data"
         self.popular_suffixes_file = self.directory + "/popular_suffixes.npy"
         self.popular_queries_file = self.directory + "/popular_queries.npy"
         self.candidate_queries_file = self.directory + "/candidate_queries.npy"
+        self.candidate_frequencies_file = self.directory + "/candidate_frequencies.npy"
         self.training_samples_file = self.directory + "/training_samples.npy"
+        self.n_gram_frequency_file = self.directory + "/{}_gram_frequency.npy"
         self.logs_directory = self.directory + "/logs"
 
     # Returns all popular suffixes in the `background` of the query logs
@@ -23,6 +27,8 @@ class Dataset:
                 df = self.normalize_queries(df)
                 for query in df["Query"].values:
                     words = str(query).split(" ")
+                    if words[-1] == "":
+                        words = words[:-1]
                     for i in range(0, min(3, len(words))):
                         suffix = ' '.join(words[-(i+1):])
                         if suffix in suffixes:
@@ -34,8 +40,8 @@ class Dataset:
             suffixes = list(suffixes.items())
             suffixes.sort(key=lambda x: x[1], reverse=True)
             suffixes = list(map(lambda x: x[0], suffixes))
-            suffixes = suffixes[:1000]
-            np.save(self.popular_suffixes_file, np.array(suffixes))
+            suffixes = np.array(suffixes[:10000])
+            np.save(self.popular_suffixes_file, suffixes)
             return suffixes
         else:
             return np.load(self.popular_suffixes_file)
