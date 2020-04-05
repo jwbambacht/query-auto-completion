@@ -314,7 +314,9 @@ class Dataset:
             classes = []
             y = []
             popular_prefixes = self.get_popular_prefixes()
-            for query in queries:
+            for index, query in enumerate(queries):
+                if index % 100 == 0:
+                    print(index)
                 query_split = query.split(" ")
                 if len(query_split) > 1:
                     last_words = ' ' + ' '.join(query_split[1:])
@@ -328,36 +330,45 @@ class Dataset:
                             prefix_id = len(prefixes) - 1
                         if len(possible_candidates) > 9:
                             possible_candidates = random.sample(possible_candidates, 9)
-                        for popular_prefix in popular_prefixes:
-                            if popular_prefix.startswith(prefix):
-                                prefix_ids += [prefix_id]
-                                all_features += [self.get_features(prefix, query, candidate_frequencies[candidates.index(query)], n_gram_frequencies)]
-                                classes += [0]
-                                y += [1]
-                                for candidate in possible_candidates:
-                                    prefix_ids += [prefix_id]
-                                    all_features += [self.get_features(prefix, candidate, candidate_frequencies[candidates.index(candidate)], n_gram_frequencies)]
-                                    classes += [0]
-                                    y += [0]
-                            else:
-                                current_class = 2
-                                # Check if prefix has been seen in background
-                                for i in range(1, 11):
-                                    if current_class == 1:
-                                        break
-                                    for unique_query in self.get_unique_queries(part=i):
-                                        if unique_query.startswith(prefix):
-                                            current_class = 1
-                                            break
-                                prefix_ids += [prefix_id]
-                                all_features += [self.get_features(prefix, query, candidate_frequencies[candidates.index(query)], n_gram_frequencies)]
-                                classes += [current_class]
-                                y += [1]
-                                for candidate in possible_candidates:
-                                    prefix_ids += [prefix_id]
-                                    all_features += [self.get_features(prefix, candidate, candidate_frequencies[candidates.index(candidate)], n_gram_frequencies)]
-                                    classes += [current_class]
-                                    y += [0]
+                        prefix_ids += [prefix_id]
+                        all_features += [self.get_features(prefix, query, candidate_frequencies[candidates.index(query)], n_gram_frequencies)]
+                        classes += [prefix]
+                        y += [1]
+                        for candidate in possible_candidates:
+                            prefix_ids += [prefix_id]
+                            all_features += [self.get_features(prefix, candidate, candidate_frequencies[candidates.index(candidate)], n_gram_frequencies)]
+                            classes += [" "]
+                            y += [0]
+                        # for popular_prefix in popular_prefixes:
+                        #    if popular_prefix.startswith(prefix):
+                        #        prefix_ids += [prefix_id]
+                        #        all_features += [self.get_features(prefix, query, candidate_frequencies[candidates.index(query)], n_gram_frequencies)]
+                        #        classes += [0]
+                        #        y += [1]
+                        #        for candidate in possible_candidates:
+                        #            prefix_ids += [prefix_id]
+                        #            all_features += [self.get_features(prefix, candidate, candidate_frequencies[candidates.index(candidate)], n_gram_frequencies)]
+                        #            classes += [0]
+                        #            y += [0]
+                        #    else:
+                        #        current_class = 2
+                        #        # Check if prefix has been seen in background
+                        #        for i in range(1, 11):
+                        #            if current_class == 1:
+                        #                break
+                        #            for unique_query in self.get_unique_queries(part=i):
+                        #                if unique_query.startswith(prefix):
+                        #                    current_class = 1
+                        #                    break
+                        #        prefix_ids += [prefix_id]
+                        #        all_features += [self.get_features(prefix, query, candidate_frequencies[candidates.index(query)], n_gram_frequencies)]
+                        #        classes += [current_class]
+                        #        y += [1]
+                        #        for candidate in possible_candidates:
+                        #            prefix_ids += [prefix_id]
+                        #            all_features += [self.get_features(prefix, candidate, candidate_frequencies[candidates.index(candidate)], n_gram_frequencies)]
+                        #            classes += [current_class]
+                        #            y += [0]
             all_features = list(map(lambda x: ','.join(list(map(str, x))), all_features))
             f = open(self.testing_samples_file, "w")
             for i in range(len(prefix_ids)):
@@ -369,7 +380,8 @@ class Dataset:
             testing_samples = []
             f = open(self.testing_samples_file)
             for line in f.readlines():
-                features = list(map(int, line.split(",")))
+                split_line = line.split(",")
+                features = [len(split_line[0])] + list(map(int, line.split(",")[1:]))
                 if len(features) > 0:
                     testing_samples += [features]
             return testing_samples
