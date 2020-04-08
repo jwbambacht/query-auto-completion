@@ -1,6 +1,5 @@
 import pickle
 import pyltr
-import sklearn
 from dataset import Dataset
 import numpy as np
 import os
@@ -28,8 +27,8 @@ def train_model(overwrite=False):
         return LM
 
 
-def main():
-    LM = train_model(False)
+def calculate_mrr_lm():
+    lm = train_model(False)
 
     dataset = Dataset()
     testing_data = dataset.get_testing_samples()
@@ -37,28 +36,69 @@ def main():
     i = 0
     ranks = []
     while i < len(testing_data):
-        curr_id = testing_data[i][1]
+        curr_id = testing_data[i][0]
         j = i + 1
-        while j < len(testing_data) and curr_id == testing_data[j][1]:
+        while j < len(testing_data) and curr_id == testing_data[j][0]:
             j += 1
 
-        pred = LM.predict([x[2:len(testing_data[0]) - 1] for x in testing_data[i:j]])
+        pred = lm.predict([x[:len(testing_data[0]) - 1] for x in testing_data[i:j]])
         pred = zip(pred, [y[len(testing_data[0]) - 1] for y in testing_data[i:j]])
         pred = sorted(pred, reverse=True)
 
         index = map(lambda x: x[1], pred).index(1)
-        count = np.sum(map(lambda x: x == pred[index][0], pred))
+        count = np.sum(map(lambda x: x[0] == pred[index][0], pred))
         avg_rank = 0
         for k in range(count):
             avg_rank += index + 1 + k
-        avg_rank = avg_rank/count
-        ranks.append(avg_rank)
+        avg_rank = avg_rank / count
+
+        if len(pred) == 10:
+            ranks.append(avg_rank)
         i = j
 
-    print(ranks)
-    MRR = np.mean(map(lambda x: 1/x, ranks))
-    print(MRR)
+    mrr = np.mean(map(lambda x: 1 / x if x <= 8 else 0, ranks))
+    return mrr
+
+
+def calculate_mrr_mpc():
+    dataset = Dataset()
+    testing_data = dataset.get_testing_samples()
+
+    i = 0
+    ranks = []
+    while i < len(testing_data):
+        curr_id = testing_data[i][0]
+        j = i + 1
+        while j < len(testing_data) and curr_id == testing_data[j][0]:
+            j += 1
+
+        pred = [x[7] for x in testing_data[i:j]]
+        pred = zip(pred, [y[len(testing_data[0]) - 1] for y in testing_data[i:j]])
+        pred = sorted(pred, reverse=True)
+
+        index = map(lambda x: x[1], pred).index(1)
+        count = np.sum(map(lambda x: x[0] == pred[index][0], pred))
+        avg_rank = 0
+        if pred[index][0] != 0:
+            for k in range(count):
+                avg_rank += index + 1 + k
+            avg_rank = avg_rank / count
+        else:
+            avg_rank = 10
+
+        if len(pred) == 10:
+            ranks.append(avg_rank)
+        i = j
+
+    mrr = np.mean(map(lambda x: 1 / x if x <= 8 else 0, ranks))
+    return mrr
+
+
+def main():
+    mrr_lm = calculate_mrr_lm()
+    mrr_mpc = calculate_mrr_mpc()
+    print("MRR LM: {}".format(mrr_lm))
+    print("MRR MPC: {}".format(mrr_mpc))
 
 
 main()
-
