@@ -150,15 +150,14 @@ class Dataset:
             f = open(self.candidate_queries_file, "w")
             for index, candidate in enumerate(candidates):
                 f.write(candidate)
-                if index != len(candidates) - 1:
-                    f.write("\n")
+                f.write("\n")
             f.close()
             return candidates
         else:
             candidates = []
             f = open(self.candidate_queries_file, "r")
             for line in f.readlines():
-                candidates += [line[:-2]]
+                candidates += [line[:-1]]
             f.close()
             return candidates
 
@@ -186,7 +185,7 @@ class Dataset:
             queries = []
             f = open(self.unique_queries_file.format(part), "r")
             for line in f.readlines():
-                queries += [line]
+                queries += [line[:-1]]
             f.close()
             return queries
 
@@ -203,7 +202,7 @@ class Dataset:
                 del df
                 gc.collect()
 
-            frequencies = list(map(lambda x: frequencies[x]), candidates)
+            frequencies = list(map(lambda x: frequencies[x], candidates))
             f = open(self.candidate_frequencies_file, "w")
             for index, freq in enumerate(frequencies):
                 f.write(str(freq))
@@ -226,6 +225,7 @@ class Dataset:
             open(self.training_samples_file, "w").close()
             candidates = self.get_candidate_queries()
             candidate_frequencies = self.get_candidate_frequencies(candidates)
+            candidate_frequencies = {candidates[i]: candidate_frequencies[i] for i in range(len(candidates))}
             n_gram_frequencies = [self.n_gram_frequency(i) for i in range(1, 7)]
             queries = []
             prefixes = []
@@ -235,7 +235,6 @@ class Dataset:
             for i in range(6):
                 n_gram_frequencies[i] = {item[0]: item[1] for item in n_gram_frequencies[i]}
             for filename in os.listdir(self.logs_directory):
-                print(filename)
                 df = pd.read_csv("{}/{}".format(self.logs_directory, filename), sep="\t")
                 df = df[(df['QueryTime'] > '2006-05-01') & (df['QueryTime'] < '2006-05-15')]
                 df = self.normalize_queries(df)
@@ -247,7 +246,7 @@ class Dataset:
             count = 0
             print(len(queries))
             for query in queries:
-                if count % 100 == 0:
+                if count % 1000 == 0:
                     print(count)
                 count += 1
                 # If the query is in the candidates
@@ -263,13 +262,18 @@ class Dataset:
                             prefixes += [prefix]
                             prefix_id = len(prefixes) - 1
                         prefix_ids += [prefix_id]
-                        all_features += [self.get_features(prefix, query, candidate_frequencies[candidates.index(query)], n_gram_frequencies)]
+                        all_features += [self.get_features(prefix, query, candidate_frequencies[query], n_gram_frequencies)]
                         y += [1]
                         if len(possible_candidates) > 9:
-                            possible_candidates = random.sample(possible_candidates, 9)
-                        for full_query in possible_candidates:
+                            possible_candidates = list(
+                                map(lambda x: (x, candidate_frequencies[x]), possible_candidates))
+                            possible_candidates.sort(key=lambda x: x[1], reverse=True)
+                            possible_candidates = possible_candidates[:9]
+                        else:
+                            possible_candidates = list(map(lambda x: (x, candidate_frequencies[x]), possible_candidates))
+                        for full_query, frequency in possible_candidates:
                             prefix_ids += [prefix_id]
-                            all_features += [self.get_features(prefix, full_query, candidate_frequencies[candidates.index(full_query)], n_gram_frequencies)]
+                            all_features += [self.get_features(prefix, full_query, frequency, n_gram_frequencies)]
                             y += [0]
                 if len(prefix_ids) >= 100:
                     self.write_to_file(self.training_samples_file, prefix_ids, all_features, y)
@@ -290,9 +294,9 @@ class Dataset:
     def get_testing_samples(self, overwrite=False):
         if overwrite or not os.path.isfile(self.testing_samples_file):
             print("Generating testing samples")
-            open(self.training_samples_file, "w").close()
             candidates = self.get_candidate_queries()
             candidate_frequencies = self.get_candidate_frequencies(candidates)
+            candidate_frequencies = {candidates[i]: candidate_frequencies[i] for i in range(len(candidates))}
             n_gram_frequencies = [self.n_gram_frequency(i) for i in range(1, 7)]
             for i in range(6):
                 n_gram_frequencies[i] = {item[0]: item[1] for item in n_gram_frequencies[i]}
@@ -320,8 +324,10 @@ class Dataset:
                 query_split = query.split(" ")
                 if len(query_split) > 1:
                     last_words = ' ' + ' '.join(query_split[1:])
-                    prefix = query_split[0] + last_words[:random.randint(1, len(last_words))]
+                    prefix = query_split[0] + last_words[:random.randint(0, len(last_words)-1)]
+                    print(prefix)
                     possible_candidates = [q for q in candidates if q.startswith(prefix) and q != query]
+                    print(len(possible_candidates))
                     if len(possible_candidates) > 0:
                         if prefix in prefixes:
                             prefix_id = prefixes.index(prefix)
@@ -329,15 +335,19 @@ class Dataset:
                             prefixes += [prefix]
                             prefix_id = len(prefixes) - 1
                         if len(possible_candidates) > 9:
-                            possible_candidates = random.sample(possible_candidates, 9)
+                            possible_candidates = list(map(lambda x: (x, candidate_frequencies[x]), possible_candidates))
+                            possible_candidates.sort(key=lambda x: x[1], reverse=True)
+                            possible_candidates = possible_candidates[:9]
+                        else:
+                            possible_candidates = list(map(lambda x: (x, candidate_frequencies[x]), possible_candidates))
                         prefix_ids += [prefix_id]
-                        all_features += [self.get_features(prefix, query, candidate_frequencies[candidates.index(query)], n_gram_frequencies)]
+                        all_features += [self.get_features(prefix, query, candidate_frequencies[query], n_gram_frequencies)]
                         classes += [prefix]
                         full_queries += [query]
                         y += [1]
-                        for candidate in possible_candidates:
+                        for candidate, frequency in possible_candidates:
                             prefix_ids += [prefix_id]
-                            all_features += [self.get_features(prefix, candidate, candidate_frequencies[candidates.index(candidate)], n_gram_frequencies)]
+                            all_features += [self.get_features(prefix, candidate, frequency, n_gram_frequencies)]
                             classes += [" "]
                             full_queries += [candidate]
                             y += [0]
