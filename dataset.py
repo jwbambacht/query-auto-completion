@@ -319,15 +319,13 @@ class Dataset:
             classes = []
             y = []
             for index, query in enumerate(queries):
-                if index % 100 == 0:
+                if index % 1000 == 0:
                     print(index)
                 query_split = query.split(" ")
                 if len(query_split) > 1:
                     last_words = ' ' + ' '.join(query_split[1:])
                     prefix = query_split[0] + last_words[:random.randint(0, len(last_words)-1)]
-                    print(prefix)
                     possible_candidates = [q for q in candidates if q.startswith(prefix) and q != query]
-                    print(len(possible_candidates))
                     if len(possible_candidates) > 0:
                         if prefix in prefixes:
                             prefix_id = prefixes.index(prefix)
@@ -360,7 +358,7 @@ class Dataset:
             return self.get_testing_samples()
         else:
             testing_samples = []
-            f = open(self.testing_samples_file)
+            f = open(self.testing_samples_file, encoding='latin-1')
             for line in f.readlines():
                 split_line = line.split(",")
                 features = list(map(int, line.split(",")[2:]))
