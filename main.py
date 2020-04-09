@@ -45,8 +45,8 @@ def calculate_mrr_lm():
         pred = zip(pred, [y[len(testing_data[0]) - 1] for y in testing_data[i:j]])
         pred = sorted(pred, reverse=True)
 
-        index = map(lambda x: x[1], pred).index(1)
-        count = np.sum(map(lambda x: x[0] == pred[index][0], pred))
+        index = list(map(lambda x: x[1], pred)).index(1)
+        count = np.sum(list(map(lambda x: x[0] == pred[index][0], pred)))
         avg_rank = 0
         for k in range(count):
             avg_rank += index + 1 + k
@@ -56,7 +56,7 @@ def calculate_mrr_lm():
             ranks.append(avg_rank)
         i = j
 
-    mrr = np.mean(map(lambda x: 1 / x if x <= 8 else 0, ranks))
+    mrr = np.mean(list(map(lambda x: 1 / x if x <= 8 else 0, ranks)))
     return mrr
 
 
@@ -76,8 +76,8 @@ def calculate_mrr_mpc():
         pred = zip(pred, [y[len(testing_data[0]) - 1] for y in testing_data[i:j]])
         pred = sorted(pred, reverse=True)
 
-        index = map(lambda x: x[1], pred).index(1)
-        count = np.sum(map(lambda x: x[0] == pred[index][0], pred))
+        index = list(map(lambda x: x[1], pred)).index(1)
+        count = np.sum(list(map(lambda x: x[0] == pred[index][0], pred)))
         avg_rank = 0
         if pred[index][0] != 0:
             for k in range(count):
@@ -90,7 +90,7 @@ def calculate_mrr_mpc():
             ranks.append(avg_rank)
         i = j
 
-    mrr = np.mean(map(lambda x: 1 / x if x <= 8 else 0, ranks))
+    mrr = np.mean(list(map(lambda x: 1 / x if x <= 8 else 0, ranks)))
     return mrr
 
 
