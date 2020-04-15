@@ -23,8 +23,10 @@ class Dataset:
     # Returns all popular suffixes in the `background` of the query logs
     def get_popular_suffixes(self, overwrite=False):
         if overwrite or not os.path.isfile(self.popular_suffixes_file):
+            print("Generating most popular suffixes")
             suffixes = {}
             for filename in os.listdir(self.logs_directory):
+                print(filename)
                 df = pd.read_csv("{}/{}".format(self.logs_directory, filename), sep="\t")
                 df = df[(df['QueryTime'] > '2006-03-01') & (df['QueryTime'] < '2006-05-01')]
                 df = self.normalize_queries(df)
@@ -111,7 +113,7 @@ class Dataset:
             queries = list(queries.items())
             queries.sort(key=lambda x: x[1], reverse=True)
             queries = list(map(lambda x: x[0], queries))
-            queries = np.array(queries[:100000])
+            queries = np.array(queries[:724340])
             np.save(self.popular_queries_file, queries)
             return queries
         else:
@@ -369,7 +371,7 @@ class Dataset:
     @staticmethod
     def write_to_file(filename, prefix_ids, features, y):
         features = list(map(lambda x: ",".join(list(map(str, x))), features))
-        f = open(filename, "a")
+        f = open(filename, "w")
         for i in range(len(prefix_ids)):
             f.write("{},{},{}".format(prefix_ids[i], features[i], y[i]))
             f.write("\n")

@@ -12,8 +12,8 @@ def train_model(overwrite=False,withFeatures=True):
         modelName = "data/model-withoutFeatures.sav"
 
     if overwrite or not os.path.isfile(modelName):
-        dataset = Dataset()
-        training_data = dataset.get_training_samples()[:10]
+        dataset = Data()
+        training_data = dataset.get_training_samples(0)
         training_data = sorted(training_data, key=lambda x: x[0])
         qid = [x[0] for x in training_data]
         y = [x[len(training_data[0]) - 1] for x in training_data]
@@ -39,8 +39,8 @@ def train_model(overwrite=False,withFeatures=True):
 def calculate_mrr_lm(withFeatures=True):
     lm = train_model(False,withFeatures)
 
-    dataset = Dataset()
-    testing_data = dataset.get_testing_samples()
+    dataset = Data()
+    testing_data = dataset.get_testing_samples(0)
 
     i = 0
     ranks = []
@@ -70,8 +70,8 @@ def calculate_mrr_lm(withFeatures=True):
 
 
 def calculate_mrr_mpc():
-    dataset = Dataset()
-    testing_data = dataset.get_testing_samples()
+    dataset = Data()
+    testing_data = dataset.get_testing_samples(0)
 
     i = 0
     ranks = []
