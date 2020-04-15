@@ -1,6 +1,7 @@
 import pickle
 import pyltr
 from dataset import Dataset
+from data import Data
 import numpy as np
 import os
 
@@ -8,7 +9,7 @@ import os
 def train_model(overwrite=False):
     if overwrite or not os.path.isfile("data/model.sav"):
         dataset = Dataset()
-        training_data = dataset.get_training_samples()
+        training_data = dataset.get_training_samples()[:10]
         training_data = sorted(training_data, key=lambda x: x[0])
         qid = [x[0] for x in training_data]
         y = [x[len(training_data[0]) - 1] for x in training_data]
@@ -87,6 +88,7 @@ def calculate_mrr_mpc():
             avg_rank = 10
 
         if len(pred) == 10:
+            print(avg_rank)
             ranks.append(avg_rank)
         i = j
 
@@ -101,4 +103,6 @@ def main():
     print("MRR MPC: {}".format(mrr_mpc))
 
 
-main()
+# main()
+data = Data()
+data.get_training_samples(0, overwrite=True)
