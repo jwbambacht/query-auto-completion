@@ -213,12 +213,33 @@ class Data:
             f.close()
             return frequency
 
-        # Get the training samples
+    @staticmethod
+    def get_possible_candidates(prefix, candidates, query):
+        index = 0
+        # Find starting index
+        while prefix >= candidates[index] or candidates[index].startswith(prefix):
+            index += 10000
+            if index > len(candidates) - 1:
+                index = len(candidates) - 1
+                break
+        end_index = index
+
+        index = max(0, index - 10000)
+
+        while prefix <= candidates[index]:
+            index -= 10000
+            if index < 0:
+                index = 0
+                break
+
+        return [q for q in candidates[index:end_index] if q.startswith(prefix) and q != query]
+
+    # Get the training samples
     def get_training_samples(self, n, overwrite=False):
         if overwrite or not os.path.isfile(self.training_samples_file.format(n)):
             print("Generating the training samples")
             candidate_frequencies = self.get_candidate_frequencies(n)
-            candidates = candidate_frequencies.keys()
+            candidates = sorted(candidate_frequencies.keys())
             n_gram_frequencies = [self.n_gram_frequency(i) for i in range(1, 7)]
             queries = []
             prefixes = []
@@ -243,7 +264,7 @@ class Data:
                 if len(query_split) > 1:
                     last_words = ' ' + ' '.join(query_split[1:])
                     prefix = query_split[0] + last_words[:random.randint(0, len(last_words) - 1)]
-                    possible_candidates = [q for q in candidates if q.startswith(prefix) and q != query]
+                    possible_candidates = Data.get_possible_candidates(prefix, candidates, query)
                     if len(possible_candidates) > 0:
                         if prefix in prefixes:
                             prefix_id = prefixes.index(prefix)
@@ -286,7 +307,8 @@ class Data:
         if overwrite or not os.path.isfile(self.testing_samples_file.format(n)):
             print("Generating testing samples")
             candidate_frequencies = self.get_candidate_frequencies(n)
-            candidates = candidate_frequencies.keys()
+            candidates = sorted(candidate_frequencies.keys())
+
             n_gram_frequencies = [self.n_gram_frequency(i) for i in range(1, 7)]
             queries = []
             for filename in os.listdir(self.logs_directory):
@@ -314,7 +336,7 @@ class Data:
                 if len(query_split) > 1:
                     last_words = ' ' + ' '.join(query_split[1:])
                     prefix = query_split[0] + last_words[:random.randint(0, len(last_words) - 1)]
-                    possible_candidates = [q for q in candidates if q.startswith(prefix) and q != query]
+                    possible_candidates = Data.get_possible_candidates(prefix, candidates, query)
                     if len(possible_candidates) > 0:
                         if prefix in prefixes:
                             prefix_id = prefixes.index(prefix)
