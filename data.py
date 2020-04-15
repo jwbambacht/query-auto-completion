@@ -67,7 +67,7 @@ class Data:
             return suffixes
         else:
             suffixes = []
-            f = open(self.popular_suffixes_file, "r")
+            f = open(self.popular_suffixes_file, "r", encoding='latin-1')
             for line in f.readlines():
                 suffixes += [line[:-1]]
             f.close()
@@ -101,7 +101,7 @@ class Data:
             return queries
         else:
             queries = []
-            f = open(self.popular_queries_file, "r")
+            f = open(self.popular_queries_file, "r", encoding='latin-1')
             for line in f.readlines():
                 queries += [line[:-1]]
             f.close()
@@ -142,7 +142,7 @@ class Data:
             return candidates
         else:
             candidates = []
-            f = open(self.candidate_queries_file.format(n), "r")
+            f = open(self.candidate_queries_file.format(n), "r", encoding='latin-1')
             for line in f.readlines():
                 candidates += [line[:-1]]
             f.close()
@@ -171,7 +171,7 @@ class Data:
             return frequencies
         else:
             frequencies = {}
-            f = open(self.candidate_frequencies_file.format(n), "r")
+            f = open(self.candidate_frequencies_file.format(n), "r", encoding='latin-1')
             for line in f.readlines():
                 split = line.split(",")
                 frequencies[split[0]] = int(split[1])
@@ -206,7 +206,7 @@ class Data:
                 return frequency
         else:
             frequency = {}
-            f = open(self.n_gram_frequency_file.format(n), "r")
+            f = open(self.n_gram_frequency_file.format(n), "r", encoding='latin-1')
             for line in f.readlines():
                 split = line.split(",")
                 frequency[split[0]] = int(split[1])
