@@ -235,7 +235,7 @@ class Data:
                 del df
                 gc.collect()
             print("Found {} queries for training".format(len(queries)))
-            for index, query in enumerate(queries[:5]):
+            for index, query in enumerate(queries):
                 if index % 1000 == 0:
                     print(index)
                 # If the query is in the candidates
