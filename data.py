@@ -432,3 +432,54 @@ class Data:
             features += [0]
 
         return features
+
+    def get_prefix_counts(self, overwrite=False):
+        if overwrite or not os.path.isfile(self.popular_prefixes_file):
+            print("Generating most popular prefixes")
+            prefixes = {}
+            for filename in os.listdir(self.logs_directory):
+                print(filename)
+                df = pd.read_csv("{}/{}".format(self.logs_directory, filename), sep="\t")
+                df = df[(df['QueryTime'] > '2006-03-01') & (df['QueryTime'] < '2006-05-01')]
+                df = self.normalize_queries(df)
+                for query in df["Query"].values:
+                    for i in range(len(query)):
+                        prefix = query[:i+1]
+                        if prefix in prefixes:
+                            prefixes[prefix] += 1
+                        else:
+                            prefixes[prefix] = 1
+                print(len(prefixes))
+                del df
+                gc.collect()
+            f = open(self.popular_prefixes_file, "w")
+            for prefix, count in prefixes.items():
+                f.write("{},{}".format(prefix, count))
+                f.write("\n")
+            f.close()
+            return prefixes
+        else:
+            prefixes = {}
+            f = open(self.popular_prefixes_file, "r", encoding='latin-1')
+            for line in f.readlines():
+                split = line.split(",")
+                prefixes[split[0]] = int(split[1])
+            f.close()
+            return prefixes
+
+    @staticmethod
+    def get_prefix_popularity(prefix, prefix_counts, popular_prefix_count):
+        if prefix not in prefix_counts:
+            return "Unseen"
+        elif prefix_counts[prefix] >= popular_prefix_count:
+            return "Frequent"
+        else:
+            return "Rare"
+
+    def get_testing_prefixes(self, n):
+        f = open(self.testing_samples_file.format(n), "r", encoding='latin-1')
+        prefixes = []
+        for line in f.readlines():
+            prefixes += [line.split(",")[0]]
+        f.close()
+        return prefixes
