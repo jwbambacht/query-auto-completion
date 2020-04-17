@@ -1,6 +1,5 @@
 import pickle
 import pyltr
-from dataset import Dataset
 from data import Data
 import numpy as np
 import os
