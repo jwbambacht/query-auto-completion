@@ -4,7 +4,7 @@ from data import Data
 import numpy as np
 import os
 
-def train_model(overwrite=False,withFeatures=True):
+def train_model(n, overwrite=False,withFeatures=True):
     if withFeatures:
         modelName = "data/model-withFeatures.sav"
     else:
@@ -12,7 +12,7 @@ def train_model(overwrite=False,withFeatures=True):
 
     if overwrite or not os.path.isfile(modelName):
         dataset = Data()
-        training_data = dataset.get_training_samples(0)
+        training_data = dataset.get_training_samples(n)
         training_data = sorted(training_data, key=lambda x: x[0])
         qid = [x[0] for x in training_data]
         y = [x[len(training_data[0]) - 1] for x in training_data]
@@ -36,13 +36,13 @@ def train_model(overwrite=False,withFeatures=True):
 
 
 def calculate_mrr_lm(prefix_count, popular_prefix_count, n, withFeatures=True):
-    lm = train_model(False, withFeatures)
+    lm = train_model(n, False, withFeatures)
 
     dataset = Data()
-    testing_data = dataset.get_testing_samples(0)
+    testing_data = dataset.get_testing_samples(10000)
 
     ranks_divided = {"Frequent": [], "Rare": [], "Unseen": []}
-    prefixes = dataset.get_testing_prefixes(n)
+    prefixes = dataset.get_testing_prefixes(10000)
 
     i = 0
     ranks = []
@@ -78,12 +78,12 @@ def calculate_mrr_lm(prefix_count, popular_prefix_count, n, withFeatures=True):
     return mrr, mrr_divided
 
 
-def calculate_mrr_mpc(prefix_count, popular_prefix_count, n):
+def calculate_mrr_mpc(prefix_count, popular_prefix_count):
     dataset = Data()
-    testing_data = dataset.get_testing_samples(n)
+    testing_data = dataset.get_testing_samples(10000)
 
     ranks_divided = {"Frequent": [], "Rare": [], "Unseen": []}
-    prefixes = dataset.get_testing_prefixes(n)
+    prefixes = dataset.get_testing_prefixes(10000)
 
     i = 0
     ranks = []
@@ -130,7 +130,7 @@ def main():
 
     mrr_lm_with_features = calculate_mrr_lm(prefixes, popular_prefix_count, n, withFeatures=True)
     mrr_lm_without_features = calculate_mrr_lm(prefixes, popular_prefix_count, n, withFeatures=False)
-    mrr_mpc = calculate_mrr_mpc(prefixes, popular_prefix_count, n)
+    mrr_mpc = calculate_mrr_mpc(prefixes, popular_prefix_count)
     
     print("MRR LM with features: {}".format(mrr_lm_with_features))
     print("MRR LM without features: {}".format(mrr_lm_without_features))
