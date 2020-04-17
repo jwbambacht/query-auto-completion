@@ -1,10 +1,8 @@
-import numpy as np
 import os
 import pandas as pd
 import string
 import gc
 import random
-import struct
 
 class Data:
     def __init__(self):
