@@ -1,11 +1,10 @@
 import pickle
 import pyltr
-from dataset import Dataset
 from data import Data
 import numpy as np
 import os
 
-def train_model(prefix_count, popular_prefix_count, n, overwrite=False,withFeatures=True):
+def train_model(overwrite=False,withFeatures=True):
     if withFeatures:
         modelName = "data/model-withFeatures.sav"
     else:
