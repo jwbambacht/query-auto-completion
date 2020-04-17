@@ -40,7 +40,7 @@ def calculate_mrr_lm(prefix_count, popular_prefix_count, n, overwriteModel=False
     lm = train_model(overwriteModel, withFeatures,n)
 
     dataset = Data()
-    testing_data = dataset.get_testing_samples(n)
+    testing_data = dataset.get_testing_samples(10000)
 
     if len(prefix_count) > 0:
         ranks_divided = {"Frequent": [], "Rare": [], "Unseen": []}
@@ -80,12 +80,12 @@ def calculate_mrr_lm(prefix_count, popular_prefix_count, n, overwriteModel=False
         mrr_divided = 0
 
     mrr = np.mean(list(map(lambda x: 1 / x if x <= 8 else 0, ranks)))
-    return mrr
+    return mrr, mrr_divided
 
 
-def calculate_mrr_mpc():
+def calculate_mrr_mpc(prefix_count, popular_prefix_count, n):
     dataset = Data()
-    testing_data = dataset.get_testing_samples(0)
+    testing_data = dataset.get_testing_samples(n)
 
     if len(prefix_count) > 0:
         ranks_divided = {"Frequent": [], "Rare": [], "Unseen": []}
@@ -157,10 +157,10 @@ def main():
     calculate_prefix_count      = False
     experiments_one_enabled     = True
     experiments_two_enabled     = False
-    test_MPC_models             = True
-    test_LM_models              = False
+    test_MPC_models             = False
+    test_LM_models              = True
     overwriteModel              = False
-    suggested_candidates_plot   = True
+    suggested_candidates_plot   = False
 
     if suggested_candidates_plot:
         calculate_prefix_count = False
@@ -175,17 +175,17 @@ def main():
         popular_prefix_count = sorted(prefixes.items(), key=lambda x: x[1], reverse=True)[100000][1]
     else:
         prefixes = {}
-        popular_prefix_count = 0
+        popular_prefix_count    = 0
     
     ## Experiment 1
+    n                           = 0
     if experiments_one_enabled:
-        n = 0
         if test_MPC_models:
-            mrr_mpc_exp1, 					mrr_mpc_divided_exp1, 					ranks_mpc_ratio_exp1      = calculate_mrr_mpc(prefixes, popular_prefix_count, 0)
+            mrr_mpc_exp1, 					mrr_mpc_divided_exp1, 					ranks_mpc_ratio_exp1      = calculate_mrr_mpc(prefixes, popular_prefix_count, n)
 
         if test_LM_models:
-            mrr_lm_without_features_exp1, 	mrr_lm_divided_without_features_exp1                              = calculate_mrr_lm(prefixes, popular_prefix_count, 0, overwriteModel, withFeatures=False)
-            mrr_lm_with_features_exp1, 		mrr_lm_divided_with_features_exp1                                 = calculate_mrr_lm(prefixes, popular_prefix_count, 0, overwriteModel, withFeatures=True)
+            mrr_lm_without_features_exp1, 	mrr_lm_divided_without_features_exp1                              = calculate_mrr_lm(prefixes, popular_prefix_count, n, overwriteModel, withFeatures=False)
+            mrr_lm_with_features_exp1, 		mrr_lm_divided_with_features_exp1                                 = calculate_mrr_lm(prefixes, popular_prefix_count, n, overwriteModel, withFeatures=True)
     
         print("Experiment 1 results, full-query based candidates only:")
         if test_MPC_models:
@@ -204,14 +204,14 @@ def main():
                 print("MRR LM w/ features Divided: {}".format(mrr_lm_divided_with_features_exp1))
     
     ## Experiment 2
+    n                           = 10000
     if experiments_two_enabled:
-        n = 10000
         if test_MPC_models:
-            mrr_mpc_exp2, 					mrr_mpc_divided_exp2, 					ranks_mpc_ratio_exp2     = calculate_mrr_mpc(prefixes, popular_prefix_count, 10000)
+            mrr_mpc_exp2, 					mrr_mpc_divided_exp2, 					ranks_mpc_ratio_exp2     = calculate_mrr_mpc(prefixes, popular_prefix_count, n)
 
         if test_LM_models:
-            mrr_lm_without_features_exp2, 	mrr_lm_divided_without_features_exp2                             = calculate_mrr_lm(prefixes, popular_prefix_count, 10000, overwriteModel, withFeatures=False)
-            mrr_lm_with_features_exp2, 		mrr_lm_divided_with_features_exp2                                = calculate_mrr_lm(prefixes, popular_prefix_count, 10000, overwriteModel, withFeatures=True)
+            mrr_lm_without_features_exp2, 	mrr_lm_divided_without_features_exp2                             = calculate_mrr_lm(prefixes, popular_prefix_count, n, overwriteModel, withFeatures=False)
+            mrr_lm_with_features_exp2, 		mrr_lm_divided_with_features_exp2                                = calculate_mrr_lm(prefixes, popular_prefix_count, n, overwriteModel, withFeatures=True)
     
         print("Experiment 2 results, full-query based candidates only:")
         if test_MPC_models:
