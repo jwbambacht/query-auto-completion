@@ -18,5 +18,8 @@ The AOL query Log consists of 5 components, with each at least containing an use
 | Name        | Version | Install                   | Description                      |
 |-------------|---------|---------------------------|----------------------------------|
 | numpy       | 1.18.1  | `pip install numpy`       | Used for scientific computing.   |
+| pandas      | 1.0.3   | `pip install pandas`      | Used for data analysis.          |
+| pyltr       | 0.2.4   | `pip install pyltr`       | Used for LambdaMART.             |
+| scikit-learn| 0.22.2  | `pip install numpy`       | Used in the pyltr package.       |
 
 	
